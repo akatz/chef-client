@@ -156,6 +156,11 @@ when "upstart"
   end
 
   service "chef-client" do
+    provider Chef::Provider::Service::Init
+    action [:disable,:stop]
+  end
+
+  service "chef-client" do
     provider Chef::Provider::Service::Upstart
     action [:enable,:start]
   end
