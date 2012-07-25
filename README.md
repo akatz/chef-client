@@ -18,6 +18,7 @@ The following platforms are supported by this cookbook, meaning that the recipes
 * Red Hat
 * CentOS
 * Fedora
+* SUSE distributions (OpenSUSE, SLES, etc)
 * ArchLinux
 * FreeBSD
 * Mac OS X
@@ -50,7 +51,7 @@ Attributes
 * `node["chef_client"]["backup_path"]` - Directory location for `Chef::Config[:file_backup_path]` where chef-client will backup templates and cookbook files. Default is based on platform, falls back to "/var/chef/backup".
 * node["chef_client"]["cron"]["minute"] - The hour that chef-client will run as a cron task, only applicable if the you set "cron" as the "init_style"
 * node["chef_client"]["cron"]["hour"] - The hour that chef-client will run as a cron task, only applicable if the you set "cron" as the "init_style"
-
+* node["chef_client"]["load_gems"] - Hash of gems to load into chef via the client.rb file
 
 
 Recipes

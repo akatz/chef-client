@@ -31,6 +31,7 @@ default["chef_client"]["server_url"]  = "http://localhost:4000"
 default["chef_client"]["validation_client_name"] = "chef-validator"
 default["chef_client"]["cron"] = { "minute" => "0", "hour" => "*/4", "path" => nil}
 default["chef_client"]["environment"] = nil
+default["chef_client"]["load_gems"] = {}
 
 case platform
 when "arch"
@@ -38,7 +39,7 @@ when "arch"
   default["chef_client"]["run_path"]    = "/var/run/chef"
   default["chef_client"]["cache_path"]  = "/var/cache/chef"
   default["chef_client"]["backup_path"] = "/var/lib/chef"
-when "debian","ubuntu","redhat","centos","fedora"
+when "debian","ubuntu","redhat","centos","fedora","suse"
   default["chef_client"]["init_style"]  = "init"
   default["chef_client"]["run_path"]    = "/var/run/chef"
   default["chef_client"]["cache_path"]  = "/var/cache/chef"
