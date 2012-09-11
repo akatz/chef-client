@@ -26,9 +26,6 @@ root_group = value_for_platform(
   "default" => "root"
 )
 
-CURRENT_CHEF_VERSION = Gem::Version.create(Chef::VERSION)
-CHEF_10_10 = Gem::Version.create('0.10.10')
-
 if node["platform"] == "windows"
     existence_check = :exists?
 # Where will also return files that have extensions matching PATHEXT (e.g.
