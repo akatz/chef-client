@@ -36,6 +36,11 @@ else
     existence_check = :executable?
     which = 'which'
     Chef::Log.debug "Using executable? and 'which' since we're on Linux"
+    user "chef" do
+      system true
+      shell "/bin/false"
+      home "/var/lib/chef"
+    end
 end
 
 # COOK-635 account for alternate gem paths
@@ -63,12 +68,12 @@ node["chef_client"]["bin"] = client_bin
     recursive true
     # Work-around for CHEF-2633
     unless node["platform"] == "windows"
-      owner "root"
+      owner "chef"
       group root_group
     end
 
     unless node["platform"] == "windows" and CURRENT_CHEF_VERSION >= CHEF_10_10
-      mode 0755
+      mode 0775
     end
   end
 end
