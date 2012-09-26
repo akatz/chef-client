@@ -58,10 +58,10 @@ when "openindiana","opensolaris","nexentacore","solaris2"
 when "windows"
   default["chef_client"]["init_style"]  = "win-service"
   default["chef_client"]["conf_dir"]    = "C:/chef"
-  default["chef_client"]["run_path"]    = "#{node["chef_client"]["conf_dir"]}/run"
-  default["chef_client"]["cache_path"]  = "#{node["chef_client"]["conf_dir"]}/cache"
-  default["chef_client"]["backup_path"] = "#{node["chef_client"]["conf_dir"]}/backup"
-  default["chef_client"]["log_dir"]     = "#{node["chef_client"]["conf_dir"]}/log"
+  default["chef_client"]["run_path"]    = File.join(node["chef_client"]["conf_dir"], "run")
+  default["chef_client"]["cache_path"]  = File.join(node["chef_client"]["conf_dir"], "cache")
+  default["chef_client"]["backup_path"] = File.join(node["chef_client"]["conf_dir"], "backup")
+  default["chef_client"]["log_dir"]     = File.join(node["chef_client"]["conf_dir"], "log")
   default["chef_client"]["bin"]         = "C:/opscode/chef/bin/chef-client"
   #Required for service_manager.rb
   default["chef_client"]["ruby_bin"]    = File.join(RbConfig::CONFIG['bindir'], "ruby.exe")

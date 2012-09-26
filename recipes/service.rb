@@ -61,23 +61,23 @@ else
   raise "Could not locate the chef-client bin in any known path. Please set the proper path by overriding node['chef_client']['bin'] in a role."
 end
 
-node["chef_client"]["bin"] = client_bin
+node.default['chef_client']['bin'] = client_bin
 
 
 %w{run_path cache_path backup_path log_dir}.each do |key|
-  directory node["chef_client"][key] do
+  directory node['chef_client'][key] do
+    Chef::Log.debug "creating #{key} #{node['chef_client'][key]}"
     recursive true
     # Work-around for CHEF-2633
     unless node["platform"] == "windows"
       owner "chef"
       group root_group
-    end
-
-    unless node["platform"] == "windows" and CURRENT_CHEF_VERSION >= CHEF_10_10
       mode 0775
     end
   end
 end
+
+Chef::Log.debug "chef-client init #{node['chef_client']['init_style']}"
 
 case node["chef_client"]["init_style"]
 when "init"
@@ -246,46 +246,46 @@ when "win-service"
   cookbook_file windows_service_file do
     source "windows_service.rb"
     inherits true
-    only_if { Chef::VERSION == '10.12.0' }
+    only_if { Chef::VERSION <= '10.12.0' }
     notifies :restart, "service[chef-client]"
   end
 
   execute "install chef-client Windows Service" do
     command "#{node["chef_client"]["ruby_bin"]} \"#{win_service_manager}\" --action install -c #{chef_client_conf_file} -L #{chef_client_log} -i #{node["chef_client"]["interval"]} -s #{node["chef_client"]["splay"]}"
     notifies :restart, "service[chef-client]"
-	action :nothing
+    action :nothing
   end
 
   execute "uninstall chef-client Windows Service" do
     command "#{node["chef_client"]["ruby_bin"]} \"#{win_service_manager}\" --action uninstall"
     notifies :run, "execute[install chef-client Windows Service]", :immediately
     not_if do
-        require 'win32/service'
+      require 'win32/service'
+      
+      actual = {}
+      expected_svc_config = {
+        :service_type => "own process, interactive",
+        :start_type => "auto start",
+        :error_control => "normal",
+        :binary_path_name => "\"#{node["chef_client"]["ruby_bin"].gsub(File::SEPARATOR, File::ALT_SEPARATOR).gsub(".exe", "")}\" \"#{windows_service_file.gsub(File::SEPARATOR, File::ALT_SEPARATOR)}\"  -c #{chef_client_conf_file.gsub(File::SEPARATOR, File::ALT_SEPARATOR)} -L #{chef_client_log.gsub(File::SEPARATOR, File::ALT_SEPARATOR)} -i #{node["chef_client"]["interval"]} -s #{node["chef_client"]["splay"]}",
+        :load_order_group => "",
+        :tag_id => 0,
+        :dependencies => [],
+        :service_start_name => "LocalSystem",
+        :display_name => "chef-client"
+        }
 
-        actual = {}
-        expected_svc_config = {
-            :service_type => "own process, interactive",
-            :start_type => "auto start",
-            :error_control => "normal",
-            :binary_path_name => "\"#{node["twdc"]["cookbook"]["twdc_chef_client"]["ruby_bin"].gsub(File::SEPARATOR, File::ALT_SEPARATOR).gsub(".exe", "")}\" \"#{windows_service_file.gsub(File::SEPARATOR, File::ALT_SEPARATOR)}\"  -c #{chef_client_conf_file.gsub(File::SEPARATOR, File::ALT_SEPARATOR)} -L #{chef_client_log.gsub(File::SEPARATOR, File::ALT_SEPARATOR)} -i #{node["twdc"]["cookbook"]["twdc_chef_client"]["interval"]} -s #{node["twdc"]["cookbook"]["twdc_chef_client"]["splay"]}",
-            :load_order_group => "",
-            :tag_id => 0,
-            :dependencies => [],
-            :service_start_name => "LocalSystem",
-            :display_name => "chef-client"
-            }
+      begin
+        # convert the service config_info from a Struct to a Hash so we can compare with our expected config
+        actual = Hash[Win32::Service.config_info('chef-client').each_pair.to_a]
+      rescue Win32::Service::Error
+        # catch the exception and do nothing, since this means the service doesn't exist
+      end
 
-        begin
-            # convert the service config_info from a Struct to a Hash so we can compare with our expected config
-            actual = Hash[Win32::Service.config_info('chef-client').each_pair.to_a]
-        rescue Win32::Service::Error
-            # catch the exception and do nothing, since this means the service doesn't exist
-        end
+      Chef::Log.debug("actual: #{actual}")
+      Chef::Log.debug("expected: #{expected_svc_config}")
 
-        Chef::Log.debug("actual: #{actual}")
-        Chef::Log.debug("expected: #{expected_svc_config}")
-
-        expected_svc_config.eql?(actual)
+      expected_svc_config == actual
     end
   end
 
@@ -293,9 +293,9 @@ when "win-service"
     supports :restart => true
     action [ :enable, :start ]
     provider Chef::Provider::Service::Windows
-    start_command "#{node["chef_client"]["ruby_bin"]} \"#{win_service_manager}\" --action start"
-    stop_command "#{node["chef_client"]["ruby_bin"]} \"#{win_service_manager}\" --action stop"
-    restart_command "#{node["chef_client"]["ruby_bin"]} \"#{win_service_manager}\" --action restart"
+#    start_command "#{node["chef_client"]["ruby_bin"]} \"#{win_service_manager}\" --action start"
+#    stop_command "#{node["chef_client"]["ruby_bin"]} \"#{win_service_manager}\" --action stop"
+#    restart_command "#{node["chef_client"]["ruby_bin"]} \"#{win_service_manager}\" --action restart"
   end
 
 when "bsd"
