@@ -85,6 +85,7 @@ when "init"
     mode 0755
     variables(
       :client_bin => client_bin
+      :fork => node['chef-client']['fork']
     )
     notifies :restart, "service[chef-client]", :delayed
   end
@@ -155,6 +156,7 @@ when "upstart"
     mode 0644
     variables(
       :client_bin => client_bin
+      :fork => node['chef-client']['fork']
     )
     notifies :restart, "service[chef-client]", :delayed
   end
