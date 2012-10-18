@@ -20,7 +20,8 @@
 # limitations under the License.
 #
 
-require 'rubygems' #in case we're on 1.8
+require 'chef/version_constraint'
+require 'chef/exceptions'
 
 root_group = value_for_platform(
   ["openbsd", "freebsd", "mac_os_x", "mac_os_x_server"] => { "default" => "wheel" },
@@ -109,8 +110,16 @@ when "init"
   end
 
 when "smf"
+  directory node['chef_client']['method_dir'] do
+    action :create
+    owner "root"
+    group "bin"
+    mode "0644"
+    recursive true
+  end
+  
   local_path = ::File.join(Chef::Config[:file_cache_path], "/")
-  template "/lib/svc/method/chef-client" do
+  template "#{node['chef_client']['method_dir']}/chef-client" do
     source "solaris/chef-client.erb"
     owner "root"
     group "root"
@@ -296,6 +305,29 @@ when "win-service"
 #    start_command "#{node["chef_client"]["ruby_bin"]} \"#{win_service_manager}\" --action start"
 #    stop_command "#{node["chef_client"]["ruby_bin"]} \"#{win_service_manager}\" --action stop"
 #    restart_command "#{node["chef_client"]["ruby_bin"]} \"#{win_service_manager}\" --action restart"
+  end
+
+when "launchd"
+
+  version_checker = Chef::VersionConstraint.new(">= 0.10.10")
+  mac_service_supported = version_checker.include?(node['chef_packages']['chef']['version'])
+
+  if mac_service_supported
+    template "/Library/LaunchDaemons/com.opscode.chef-client.plist" do
+      source "com.opscode.chef-client.plist.erb"
+      mode 0644
+      variables(
+        :launchd_mode => node["chef_client"]["launchd_mode"]
+      )
+    end
+
+    service "chef-client" do
+      service_name "com.opscode.chef-client"
+      provider Chef::Provider::Service::Macosx
+      action :start
+    end
+  else
+    log("Mac OS X Service provider is only supported in Chef >= 0.10.10") { level :warn }
   end
 
 when "bsd"
