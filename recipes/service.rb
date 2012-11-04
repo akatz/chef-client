@@ -170,14 +170,17 @@ when "upstart"
     notifies :restart, "service[chef-client]", :delayed
   end
 
-  service "chef-client" do
+  service "chef-client init" do
+    service_name "chef-client"
     provider Chef::Provider::Service::Init
-    action [:disable,:stop]
+    supports :status => true
+    action [ :disable, :stop ]
   end
 
   service "chef-client" do
     provider Chef::Provider::Service::Upstart
-    action [:enable,:start]
+    supports :status => true, :restart => true
+    action [ :enable, :start ]
   end
 
 when "arch"
@@ -278,7 +281,7 @@ when "win-service"
         :service_type => "own process, interactive",
         :start_type => "auto start",
         :error_control => "normal",
-        :binary_path_name => "\"#{node["chef_client"]["ruby_bin"].gsub(File::SEPARATOR, File::ALT_SEPARATOR).gsub(".exe", "")}\" \"#{windows_service_file.gsub(File::SEPARATOR, File::ALT_SEPARATOR)}\"  -c #{chef_client_conf_file.gsub(File::SEPARATOR, File::ALT_SEPARATOR)} -L #{chef_client_log.gsub(File::SEPARATOR, File::ALT_SEPARATOR)} -i #{node["chef_client"]["interval"]} -s #{node["chef_client"]["splay"]}",
+        :binary_path_name => "\"#{node["chef_client"]["ruby_bin"].gsub(File::SEPARATOR, File::ALT_SEPARATOR).gsub(".exe", "")}\" \"#{windows_service_file.gsub(File::SEPARATOR, File::ALT_SEPARATOR)}\"  -c #{chef_client_conf_file.gsub(File::SEPARATOR, File::ALT_SEPARATOR)} -L #{chef_client_log.gsub(File::SEPARATOR, File::ALT_SEPARATOR)} -i #{node["chef_client"]["interval"]} -s #{node["chef_client"]["splay"]} #{node["chef_client"]["fork"] ? "--fork" : ""}",
         :load_order_group => "",
         :tag_id => 0,
         :dependencies => [],
