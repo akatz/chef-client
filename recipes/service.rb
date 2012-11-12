@@ -87,7 +87,7 @@ when "init"
   dist_dir, conf_dir = value_for_platform_family(
     ["debian"] => ["debian", "default"],
     ["rhel"] => ["redhat", "sysconfig"],
-    ["suse"] => ["suse", "sysconfig"],
+    ["suse"] => ["suse", "sysconfig"]
   )
 
   template "/etc/init.d/chef-client" do
@@ -171,17 +171,17 @@ when "upstart"
     notifies :restart, "service[chef-client]", :delayed
   end
 
+  service "chef-client" do
+    provider Chef::Provider::Service::Upstart
+    supports :status => true, :restart => true
+    action [ :enable, :start ]
+  end
+
   service "chef-client init" do
     service_name "chef-client"
     provider Chef::Provider::Service::Init
     supports :status => true
     action [ :disable, :stop ]
-  end
-
-  service "chef-client" do
-    provider Chef::Provider::Service::Upstart
-    supports :status => true, :restart => true
-    action [ :enable, :start ]
   end
 
 when "arch"
