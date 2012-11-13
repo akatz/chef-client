@@ -18,4 +18,3 @@
 #
 
 include_recipe "chef-client::service"
-include_recipe "chef-client::upgrade_package"
