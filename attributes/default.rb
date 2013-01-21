@@ -43,7 +43,7 @@ default["chef_client"]["load_gems"] = {}
 default["chef_client"]["report_handlers"] = []
 default["chef_client"]["exception_handlers"] = []
 default["chef_client"]["checksum_cache_skip_expires"] = true
-default["chef_client"]["daemon_options"] = []
+default["chef_client"]["daemon_options"] = ["--fork"]
 
 case node['platform_family']
 when "arch"
