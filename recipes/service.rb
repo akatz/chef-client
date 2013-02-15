@@ -107,7 +107,7 @@ when "smf"
     action :create
     owner "root"
     group "bin"
-    mode "0644"
+    mode "0755"
     recursive true
   end
 
@@ -116,7 +116,7 @@ when "smf"
     source "solaris/chef-client.erb"
     owner "root"
     group "root"
-    mode "0777"
+    mode "0755"
     notifies :restart, "service[chef-client]"
   end
 
