@@ -170,9 +170,9 @@ when "upstart"
 
   service "chef-client init" do
     service_name "chef-client"
-    provider Chef::Provider::Service::Init
+    provider Chef::Provider::Service::Init::Debian
     supports :status => true
-    action [ :disable, :stop ]
+    action [ :stop, :disable ]
   end
 
 when "arch"
