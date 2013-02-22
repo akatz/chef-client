@@ -1,4 +1,7 @@
 #
+# Cookbook Name:: chef-client_test
+# Recipe:: default
+#
 # Copyright 2012, Opscode, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,11 +17,4 @@
 # limitations under the License.
 #
 
-require File.expand_path('../support/helpers', __FILE__)
-
-describe 'chef-client::service' do
-  include Helpers::ChefClient
-  it "starts the chef-client service" do
-    service("chef-client").must_be_running
-  end
-end
+include_recipe "chef-client::default"

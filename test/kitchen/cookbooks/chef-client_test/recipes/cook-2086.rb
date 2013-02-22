@@ -1,5 +1,9 @@
 #
-# Copyright 2012, Opscode, Inc.
+# Author:: John Dewey (<john@dewey.ws>)
+# Cookbook Name:: chef-client
+# Recipe:: cron_environment_variables
+#
+# Copyright 2012, John Dewey
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,11 +18,6 @@
 # limitations under the License.
 #
 
-require File.expand_path('../support/helpers', __FILE__)
+node.set["chef_client"]["cron"]["environment_variables"] = "FOO=BAR"
 
-describe 'chef-client::service' do
-  include Helpers::ChefClient
-  it "starts the chef-client service" do
-    service("chef-client").must_be_running
-  end
-end
+include_recipe "chef-client::cron"

@@ -1,5 +1,8 @@
 #
-# Copyright 2012, Opscode, Inc.
+# Author:: Joshua Timberman <joshua@opscode.com>
+# Cookbook Name:: chef-client
+#
+# Copyright 2013, Opscode, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -16,9 +19,10 @@
 
 require File.expand_path('../support/helpers', __FILE__)
 
-describe 'chef-client::service' do
+describe 'chef-client::config' do
   include Helpers::ChefClient
-  it "starts the chef-client service" do
-    service("chef-client").must_be_running
+  it 'allows disabling ohai plugins' do
+    regexp = 'Ohai::Config\[:disabled_plugins\] =\s+\["passwd"\]'
+    file("/etc/chef/client.rb").must_match(/#{regexp}/)
   end
 end

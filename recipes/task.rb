@@ -18,6 +18,10 @@
 # limitations under the License.
 #
 
+class ::Chef::Recipe
+  include ::Opscode::ChefClient::Helpers
+end
+
 unless node["platform"] == "windows"
   return "#{node['platform']} is not supported by the #{cookbook_name}::#{recipe_name} recipe"
 end
@@ -46,14 +50,10 @@ else
   raise "Could not locate the chef-client bin in any known path. Please set the proper path by overriding node['chef_client']['bin'] in a role."
 end
 
-node["chef_client"]["bin"] = client_bin
+node.set["chef_client"]["bin"] = client_bin
 
-['run_path', 'cache_path', 'backup_path', 'log_dir'].each do |key|
-  directory node["chef_client"][key] do
-    recursive true
-    mode 0755
-  end
-end
+# libraries/helpers.rb method to DRY directory creation resources
+create_directories
 
 windows_task "chef-client" do
   run_level :highest
@@ -61,6 +61,6 @@ windows_task "chef-client" do
   -L #{File.join(node['chef_client']['log_dir'], 'client.log')} \
   -c #{File.join(node['chef_client']['conf_dir'], 'client.rb')} -s #{node['chef_client']['splay']}"
   frequency :minute
-  frequency_modifier (node['chef_client']['interval'].to_i / 60)
+  frequency_modifier(node['chef_client']['interval'].to_i / 60)
 end
 

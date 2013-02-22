@@ -19,11 +19,15 @@
 # limitations under the License.
 #
 
+class ::Chef::Recipe
+  include ::Opscode::ChefClient::Helpers
+end
+
 require 'chef/version_constraint'
 require 'chef/exceptions'
 
 root_group = value_for_platform_family(
-  ["openbsd", "freebsd", "mac_os_x"] => { "default" => "wheel" },
+  ["openbsd", "freebsd", "mac_os_x"] => "wheel",
   "default" => "root"
 )
 
@@ -61,26 +65,11 @@ else
   raise "Could not locate the chef-client bin in any known path. Please set the proper path by overriding node['chef_client']['bin'] in a role."
 end
 
-node.default['chef_client']['bin'] = client_bin
 
+node.set["chef_client"]["bin"] = client_bin
 
-%w{run_path cache_path backup_path log_dir}.each do |key|
-  directory node['chef_client'][key] do
-    Chef::Log.debug "creating #{key} #{node['chef_client'][key]}"
-    recursive true
-    mode 0755
-    unless node["platform"] == "windows"
-      if node.recipe?("chef-server")
-        owner "chef"
-        group "chef"
-      else
-        owner "root"
-        group root_group
-      end
-    end
-  end
-end
-
+# libraries/helpers.rb method to DRY directory creation resources
+create_directories
 
 case node["chef_client"]["init_style"]
 when "init"
@@ -88,6 +77,7 @@ when "init"
   #argh?
   dist_dir, conf_dir = value_for_platform_family(
     ["debian"] => ["debian", "default"],
+    ["fedora"] => ["redhat", "sysconfig"],
     ["rhel"] => ["redhat", "sysconfig"],
     ["suse"] => ["suse", "sysconfig"]
   )
@@ -118,7 +108,7 @@ when "smf"
     action :create
     owner "root"
     group "bin"
-    mode "0644"
+    mode "0755"
     recursive true
   end
 
@@ -127,11 +117,11 @@ when "smf"
     source "solaris/chef-client.erb"
     owner "root"
     group "root"
-    mode "0777"
+    mode "0755"
     notifies :restart, "service[chef-client]"
   end
 
-  template (local_path + "chef-client.xml") do
+  template(local_path + "chef-client.xml") do
     source "solaris/manifest.xml.erb"
     owner "root"
     group "root"
@@ -152,14 +142,14 @@ when "smf"
 
 when "upstart"
 
+  upstart_job_dir = "/etc/init"
+  upstart_job_suffix = ".conf"
+
   case node["platform"]
   when "ubuntu"
     if (8.04..9.04).include?(node["platform_version"].to_f)
       upstart_job_dir = "/etc/event.d"
       upstart_job_suffix = ""
-    else
-      upstart_job_dir = "/etc/init"
-      upstart_job_suffix = ".conf"
     end
   end
 
@@ -174,13 +164,16 @@ when "upstart"
   end
 
   service "chef-client" do
-    provider Chef::Provider::Service::Init
-    action [:disable,:stop]
+    provider Chef::Provider::Service::Upstart
+    supports :status => true, :restart => true
+    action [ :enable, :start ]
   end
 
-  service "chef-client" do
-    provider Chef::Provider::Service::Upstart
-    action [:enable,:start]
+  service "chef-client init" do
+    service_name "chef-client"
+    provider Chef::Provider::Service::Init::Debian
+    supports :status => true
+    action [ :stop, :disable ]
   end
 
 when "arch"
@@ -281,7 +274,7 @@ when "win-service"
         :service_type => "own process, interactive",
         :start_type => "auto start",
         :error_control => "normal",
-        :binary_path_name => "\"#{node["chef_client"]["ruby_bin"].gsub(File::SEPARATOR, File::ALT_SEPARATOR).gsub(".exe", "")}\" \"#{windows_service_file.gsub(File::SEPARATOR, File::ALT_SEPARATOR)}\"  -c #{chef_client_conf_file.gsub(File::SEPARATOR, File::ALT_SEPARATOR)} -L #{chef_client_log.gsub(File::SEPARATOR, File::ALT_SEPARATOR)} -i #{node["chef_client"]["interval"]} -s #{node["chef_client"]["splay"]}",
+        :binary_path_name => "\"#{node["chef_client"]["ruby_bin"].gsub(File::SEPARATOR, File::ALT_SEPARATOR).gsub(".exe", "")}\" \"#{windows_service_file.gsub(File::SEPARATOR, File::ALT_SEPARATOR)}\"  -c #{chef_client_conf_file.gsub(File::SEPARATOR, File::ALT_SEPARATOR)} -L #{chef_client_log.gsub(File::SEPARATOR, File::ALT_SEPARATOR)} -i #{node["chef_client"]["interval"]} -s #{node["chef_client"]["splay"]} #{node["chef_client"]["fork"] ? "--fork" : ""}",
         :load_order_group => "",
         :tag_id => 0,
         :dependencies => [],
@@ -322,7 +315,8 @@ when "launchd"
       source "com.opscode.chef-client.plist.erb"
       mode 0644
       variables(
-        :launchd_mode => node["chef_client"]["launchd_mode"]
+        :launchd_mode => node["chef_client"]["launchd_mode"],
+        :client_bin => client_bin
       )
     end
 

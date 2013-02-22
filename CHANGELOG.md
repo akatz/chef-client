@@ -1,3 +1,79 @@
+## v2.2.0:
+
+* [COOK-2317] - Provide the ability to add disabled ohai plugins in a
+  managed chef config
+* [COOK-2255] - Chef-Client Cookbook init.d script under ubuntu
+
+## v2.1.10:
+
+* [COOK-2316] - Permissions for SMF init type break Solaris 10
+
+## v2.1.8:
+
+* [COOK-2192] - Add option to use cron_d resource for cron management
+* [COOK-2261] - pin runit dependency
+
+## v2.1.6:
+
+* [COOK-1978] - make cron output location configurable
+* [COOK-2169] - use helper library to make path permissions consistent
+* [COOK-2170] - test filename cleanup (dev repository only)
+
+## v2.1.4:
+
+* [COOK-2108] - corrected Chef and Ohai version requirements in README
+
+## v2.1.2:
+
+* [COOK-2071] - chef-client breaks on value_for_platform_family b/c of
+  unneeded version
+* [COOK-2072] - chef-client on mac should not attempt to create
+  directory nil
+* [COOK-2086] - Allow the passing of an enviornment variables to
+  node['chef-client']['bin']
+* [COOK-2092] - chef-client run fails because quotes in log_path cause
+  File resource to fail
+
+## v2.1.0:
+
+* [COOK-1755] - Don't delete the validation key on systems that have a
+  'chef-server' binary in the default $PATH
+* [COOK-1898] - Support Handlers and Cache Options with Attributes
+* [COOK-1923] - support chef-client::cron on Solaris/SmartOS
+* [COOK-1924] - use splay for size of random offset in
+  chef-client::cron
+* [COOK-1927] - unknown node[:fqdn] prevents bootstrap if
+  chef-client::cron is in runlist
+* [COOK-1951] - Add an attribute for additional daemon options to pass
+  to the chef-client service
+* [COOK-2004] - in attributes, "init" style claims to handle fedora,
+  but service.rb missing a clause
+* [COOK-2017] - Support alternate chef-client locations in Mac OS X
+  Launchd service plist
+* [COOK-2052] - Log files are set to insecure default
+
+## v2.0.2:
+
+* Remove a stray comma that caused syntax error on some versions of Ruby.
+
+## v2.0.0:
+
+This version uses platform_family attribute, making the cookbook incompatible
+with older versions of Chef/Ohai, hence the major version bump.
+
+* [COOK-635] - Allow configuration of path to chef-client binary in init script
+* [COOK-985] - set correct permissions on run and log directory for chef-servers using this cookbook
+* [COOK-1379] - Register chef-client as a launchd service on Mac OS X (Server)
+* [COOK-1574] - config recipe doesn't work on Windows
+* [COOK-1586] - add SmartOS support
+* [COOK-1633] - chef-client doesn't recognise Oracle Linux, a Redhat family member
+* [COOK-1634] - chef-client init is missing for Scientific Linux
+* [COOK-1664] - corrected permissions in cron recipe (related to COOK-985)
+* [COOK-1729] - support windows task
+* [COOK-1788] - `init_style` upstart only works on Ubuntu
+* [COOK-1861] - Minor styling fix for consistency in chef-client
+* [COOK-1862] - add `name` attribute to metadata.rb
+
 ## v1.2.0:
 
 This version of the cookbook also adds minitest and test-kitchen
